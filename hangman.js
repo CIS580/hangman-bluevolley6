@@ -4,9 +4,9 @@ var lettersDiv = document.getElementById('letters');
 var guessesDiv = document.getElementById('guesses');
 var secretWord = "";
 var blanks = "";
-var badGuessCount = 0;
+var wrongGuessCount = 0;
+var correctGuessCount = 0;
 var gameOver = false;
-var solvedLetters = 0;
 
 /**
  * Initializes a new game.
@@ -48,11 +48,6 @@ function resetLetters() {
  */
 function guessLetter(elm) {
   var letter = elm.id;
-  var correctGuess = false;
-  var oldWord = wordDiv.innerHTML;
-  var newWord = [];
-
-  oldWord = oldWord.replace('<span>', '').split('</span>');
 
   // Remove the letter from possible guesses element
   var node = document.getElementById(letter);
@@ -66,41 +61,34 @@ function guessLetter(elm) {
   // TODO: Determine if the letter is in the secret word,
   // if so, reveal it in the secretWordDiv, otherwise
   // add a part to our hangman
-  secretWord = secretWord.toUpperCase();
   if(gameOver == false) {
-    for(i = 0; i < secretWord.length; i++) {
-      if(secretWord[i] == letter) {
-        correctGuess = true;
-        solvedLetters++;
-        oldWord[i] = letter;
+    if(secretWord.indexOf(letter.toLowerCase()) > -1) {
+      var oldBlanks = blanks;
+      blanks = "";
+      for(i = 0; i < secretWord.length; i++) {
+        if(secretWord[i] == letter.toLowerCase()) {
+          blanks += letter;
+          correctGuessCount++;
+        } else {
+          blanks += oldBlanks[i];
+        }
       }
+      drawBlanks();
+    } else {
+      wrongGuessCount++;
     }
+  }
 
-    if(correctGuess == true) {
-      for(i=0; i < secretWord.length; i++) {
-        newWord.push('<span>' + oldWord[i] + '</span>');
-      }
-      wordDiv.innerHTML = newWord.join('');
-    }
-
-    if(correctGuess == false) {
-      badGuessCount++;
-    }
-    if(badGuessCount < 7) {
-      drawStickMan(badGuessCount);
-    }
-
-    // TODO: Determine if the game is over, and if so,
-    // let the player know if they have won or lost
-    if(badGuessCount == 6)
-    {
-      wordDiv.innerHTML += "<br/><br/>You lose. The correct word was " + secretWord;
-      gameOver = true;
-    }
-    else if(solvedLetters == secretWord.length) {
-      wordDiv.innerHTML += "<br/><br/>You win!";
-      gameOver = true;
-    }
+  // TODO: Determine if the game is over, and if so,
+  // let the player know if they have won or lost
+  if (wrongGuessCount == 6 && gameOver == false) {
+    wordDiv.innerHTML += ("<br/><br/>You lose. The correct answer was " + secretWord);
+    gameOver = true;
+  } else if (correctGuessCount == secretWord.length && gameOver == false) {
+    wordDiv.innerHTML += ("<br/><br/>You win!!");
+    gameOver = true;
+  } else if (wrongGuessCount < 6) {
+    drawStickMan(wrongGuessCount);
   }
 }
 
